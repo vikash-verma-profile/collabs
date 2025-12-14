@@ -54,7 +54,7 @@ namespace ConsoleApp3
     }
     internal class Class7
     {
-        public static void Main()
+        public static void Main11()
         {
             List<Vehicle> vehicles= new List<Vehicle>();
             bool flag = true;

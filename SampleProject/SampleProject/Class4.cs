@@ -9,13 +9,13 @@ namespace SampleProject
 {
     internal class Class4
     {
-        public static void Main()
+        public static void Main3()
         {
             Console.WriteLine("===========INPUT==========");
             Stack arrayList = new Stack();
             arrayList.Push(1);
             arrayList.Push("Vikash");
-         
+
             Console.WriteLine("===========List==========");
             foreach (var item in arrayList)
             {
@@ -24,7 +24,7 @@ namespace SampleProject
 
             Console.WriteLine("===========REMOVE==========");
             arrayList.Pop();
-            
+
             foreach (var item in arrayList)
             {
                 Console.WriteLine(item);
@@ -36,7 +36,7 @@ namespace SampleProject
             Console.WriteLine($"Count :  {arrayList.Count}");
             foreach (var item in arrayList)
             {
-                  Console.WriteLine(item);
+                Console.WriteLine(item);
             }
 
             Console.WriteLine("===========UPDATE==========");
@@ -49,8 +49,8 @@ namespace SampleProject
             var UpdatedValue = Console.ReadLine();
             if (arrayList.Contains(inputValue))
             {
-                arrayList.(inputValue);
-                arrayList.Add(UpdatedValue);
+                // arrayList.(inputValue);
+                //arrayList.Add(UpdatedValue);
             }
             else
             {
@@ -71,6 +71,5 @@ namespace SampleProject
                 }
             }
         }
-    }
     }
 }

@@ -1,0 +1,19 @@
+Dictionary<TKey,TValue>=>It stores key/value pairs and provides functionality similar to that found in the non-generic Hashtable class.
+
+List<T>	=>It is a dynamic array that provides functionality similar to that found in the non-generic ArrayList class.
+
+Queue<T>=>A first-in, first-out list and provides functionality similar to that found in the non-generic Queue class.
+
+SortedList<TKey,TValue>	It is a sorted list of key/value pairs and provides functionality similar to that found in the non-generic SortedList class.
+
+Stack<T>	It is a first-in, last-out list and provides functionality similar to that found in the non-generic Stack class.
+HashSet<T>	It is an unordered collection of the unique elements. It prevent duplicates from being inserted in the collection.
+LinkedList<T>	It allows fast inserting and removing of elements. It implements a classic linked list.
+
+
+
+
+ArrayList	It is a dynamic array means the size of the array is not fixed, it can increase and decrease at runtime.
+Hashtable	It represents a collection of key-and-value pairs that are organized based on the hash code of the key.
+Queue	It represents a first-in, first out collection of objects. It is used when you need a first-in, first-out access of items.
+Stack	It is a linear data structure. It follows LIFO(Last In, First Out) pattern for Input/output.

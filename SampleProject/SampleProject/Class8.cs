@@ -13,7 +13,7 @@ namespace SampleProject
             Thread.Sleep(1000);
             //return "Some Value";
         }
-        public static void Main(string[]args)
+        public static void Main1(string[]args)
         {
             //await DownloadFileAsync();
             Task.Run(() => DownloadFileAsync());

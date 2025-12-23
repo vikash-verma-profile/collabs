@@ -1,0 +1,196 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using dotnetapp.Models;
+
+namespace dotnetapp
+{
+    public static class ConnectionStringProvider
+    {
+        public static string ConnectionString =
+            "User ID=sa;password=examlyMssql@123;server=localhost;Database=hospitaldb;trusted_connection=false;Persist Security Info=False;Encrypt=False";
+    }
+
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            while (true)
+            {
+                Console.WriteLine("\nHospital Management Menu");
+                Console.WriteLine("1. Add Hospital");
+                Console.WriteLine("2. Update Hospital");
+                Console.WriteLine("3. Display All Hospitals");
+                Console.WriteLine("4. Exit");
+
+                if (!int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    Console.WriteLine("Invalid choice, please try again.");
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        Hospital hospital = new Hospital();
+
+                        Console.Write("Hospital Name: ");
+                        hospital.HospitalName = Console.ReadLine();
+
+                        Console.Write("Location: ");
+                        hospital.Location = Console.ReadLine();
+
+                        Console.Write("Contact Number: ");
+                        hospital.ContactNumber = Console.ReadLine();
+
+                        Console.Write("Specialization: ");
+                        hospital.Specialization = Console.ReadLine();
+
+                        Console.Write("Available Beds: ");
+                        if (!int.TryParse(Console.ReadLine(), out int beds))
+                        {
+                            Console.WriteLine("Invalid bed count.");
+                            break;
+                        }
+                        hospital.AvailableBeds = beds;
+
+                        AddHospital(hospital);
+                        break;
+
+                    case 2:
+                        Console.Write("Enter Hospital ID: ");
+                        if (!int.TryParse(Console.ReadLine(), out int hospitalId))
+                        {
+                            Console.WriteLine("Invalid Hospital ID.");
+                            break;
+                        }
+
+                        Hospital updatedHospital = new Hospital();
+
+                        Console.Write("Hospital Name: ");
+                        updatedHospital.HospitalName = Console.ReadLine();
+
+                        Console.Write("Location: ");
+                        updatedHospital.Location = Console.ReadLine();
+
+                        Console.Write("Contact Number: ");
+                        updatedHospital.ContactNumber = Console.ReadLine();
+
+                        Console.Write("Specialization: ");
+                        updatedHospital.Specialization = Console.ReadLine();
+
+                        Console.Write("Available Beds: ");
+                        if (!int.TryParse(Console.ReadLine(), out int updatedBeds))
+                        {
+                            Console.WriteLine("Invalid bed count.");
+                            break;
+                        }
+                        updatedHospital.AvailableBeds = updatedBeds;
+
+                        UpdateHospital(hospitalId, updatedHospital);
+                        break;
+
+                    case 3:
+                        Console.Write("Enter Location to exclude: ");
+                        string location = Console.ReadLine();
+                        DisplayAllHospitals(location);
+                        break;
+
+                    case 4:
+                        Console.WriteLine("Exiting the application...");
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice, please try again.");
+                        break;
+                }
+            }
+        }
+
+        
+        public static void AddHospital(Hospital hospitalObj)
+        {
+            using SqlConnection conn = new SqlConnection(ConnectionStringProvider.ConnectionString);
+
+            string query = "SELECT * FROM Hospital";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Hospital");
+
+            DataRow row = ds.Tables["Hospital"].NewRow();
+            row["HospitalName"] = hospitalObj.HospitalName;
+            row["Location"] = hospitalObj.Location;
+            row["ContactNumber"] = hospitalObj.ContactNumber;
+            row["Specialization"] = hospitalObj.Specialization;
+            row["AvailableBeds"] = hospitalObj.AvailableBeds;
+
+            ds.Tables["Hospital"].Rows.Add(row);
+            adapter.Update(ds, "Hospital");
+
+            Console.WriteLine("Hospital added successfully.");
+        }
+
+        
+        public static void UpdateHospital(int hospitalID, Hospital updatedHospital)
+        {
+            using SqlConnection conn = new SqlConnection(ConnectionStringProvider.ConnectionString);
+
+            string query = "SELECT * FROM Hospital";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Hospital");
+
+            DataRow[] rows = ds.Tables["Hospital"].Select($"HospitalID={hospitalID}");
+
+            if (rows.Length == 0)
+            {
+                Console.WriteLine($"No hospital found with ID {hospitalID}.");
+                return;
+            }
+
+            DataRow row = rows[0];
+            row["HospitalName"] = updatedHospital.HospitalName;
+            row["Location"] = updatedHospital.Location;
+            row["ContactNumber"] = updatedHospital.ContactNumber;
+            row["Specialization"] = updatedHospital.Specialization;
+            row["AvailableBeds"] = updatedHospital.AvailableBeds;
+
+            adapter.Update(ds, "Hospital");
+
+            Console.WriteLine("Hospital information updated successfully.");
+        }
+        public static void DisplayAllHospitals(string location)
+        {
+            using SqlConnection conn = new SqlConnection(ConnectionStringProvider.ConnectionString);
+
+            string query = "SELECT * FROM Hospital";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "Hospital");
+
+            DataRow[] rows = ds.Tables["Hospital"].Select($"Location <> '{location}'");
+
+            if (rows.Length == 0)
+            {
+                Console.WriteLine("No hospitals found.");
+                return;
+            }
+
+            foreach (DataRow row in rows)
+            {
+                Console.WriteLine($"HospitalID: {row["HospitalID"]}");
+                Console.WriteLine($"HospitalName: {row["HospitalName"]}");
+                Console.WriteLine($"Location: {row["Location"]}");
+                Console.WriteLine($"ContactNumber: {row["ContactNumber"]}");
+                Console.WriteLine($"Specialization: {row["Specialization"]}");
+                Console.WriteLine($"AvailableBeds: {row["AvailableBeds"]}");
+                Console.WriteLine("-----------------------------------");
+            }
+        }
+    }
+}

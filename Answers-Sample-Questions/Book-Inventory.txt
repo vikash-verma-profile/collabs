@@ -1,0 +1,166 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace BookInventoryManagement
+{
+   
+    public class BookNotFoundException : Exception
+    {
+        public BookNotFoundException(string message) : base(message)
+        {
+        }
+    }
+    public class Book
+    {
+        public int ID { get; set; }
+        public string Title { get; set; }
+        public string Author { get; set; }
+        public string Genre { get; set; }
+        public string ShelfLocation { get; set; }
+        public bool IsAvailable { get; set; }
+
+        public Book(int id, string title, string author, string genre, string shelfLocation)
+        {
+            ID = id;
+            Title = title;
+            Author = author;
+            Genre = genre;
+            ShelfLocation = shelfLocation;
+            IsAvailable = true;
+        }
+
+        public void DisplayDetails()
+        {
+            Console.WriteLine(
+                $"Title: {Title}, ID: {ID}, Author: {Author}, Genre: {Genre}, " +
+                $"Shelf Location: {ShelfLocation}, Available: {IsAvailable}"
+            );
+        }
+    }
+
+   
+    public class BookManager
+    {
+        private List<Book> books = new List<Book>();
+
+        public void AddBook(Book book)
+        {
+            if (books.Any(b => b.ID == book.ID))
+            {
+                Console.WriteLine("Book ID already exists");
+                return;
+            }
+
+            books.Add(book);
+            Console.WriteLine("Book details added successfully");
+        }
+
+        public void DisplayAllBooks()
+        {
+            if (books.Count == 0)
+            {
+                Console.WriteLine("No books available");
+                return;
+            }
+
+            foreach (var book in books)
+            {
+                book.DisplayDetails();
+            }
+        }
+
+        public void UpdateBookAvailability(int id)
+        {
+            Book book = books.FirstOrDefault(b => b.ID == id);
+
+            if (book == null)
+            {
+                throw new BookNotFoundException($"Book with ID {id} not found");
+            }
+
+            book.IsAvailable = !book.IsAvailable;
+            Console.WriteLine($"Book with ID {id} status updated successfully");
+        }
+    }
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            BookManager manager = new BookManager();
+            bool exit = false;
+
+            while (!exit)
+            {
+                Console.WriteLine("\n1. Add a Book");
+                Console.WriteLine("2. Display All Books");
+                Console.WriteLine("3. Update Book Availability");
+                Console.WriteLine("4. Exit the Program");
+
+                if (!int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    Console.WriteLine("Invalid choice. Please try again.");
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        Console.WriteLine("Enter Book ID:");
+                        if (!int.TryParse(Console.ReadLine(), out int id))
+                        {
+                            Console.WriteLine("Invalid ID");
+                            break;
+                        }
+
+                        Console.WriteLine("Enter Title:");
+                        string title = Console.ReadLine();
+
+                        Console.WriteLine("Enter Author:");
+                        string author = Console.ReadLine();
+
+                        Console.WriteLine("Enter Genre:");
+                        string genre = Console.ReadLine();
+
+                        Console.WriteLine("Enter Shelf Location:");
+                        string shelfLocation = Console.ReadLine();
+
+                        Book book = new Book(id, title, author, genre, shelfLocation);
+                        manager.AddBook(book);
+                        break;
+
+                    case 2:
+                        manager.DisplayAllBooks();
+                        break;
+
+                    case 3:
+                        Console.WriteLine("Enter Book ID to update availability:");
+                        if (!int.TryParse(Console.ReadLine(), out int updateId))
+                        {
+                            Console.WriteLine("Invalid ID");
+                            break;
+                        }
+
+                        try
+                        {
+                            manager.UpdateBookAvailability(updateId);
+                        }
+                        catch (BookNotFoundException ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                        break;
+
+                    case 4:
+                        Console.WriteLine("Exiting the program...");
+                        exit = true;
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice. Please try again.");
+                        break;
+                }
+            }
+        }
+    }
+}

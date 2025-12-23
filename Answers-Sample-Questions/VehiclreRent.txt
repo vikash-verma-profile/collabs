@@ -1,0 +1,207 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using dotnetapp.Models;
+
+namespace dotnetapp
+{
+    public static class ConnectionStringProvider
+    {
+        public static string ConnectionString =
+            "User ID=sa;password=examlyMssql@123;server=localhost;Database=rentaldb;trusted_connection=false;Persist Security Info=False;Encrypt=False";
+    }
+
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            while (true)
+            {
+                Console.WriteLine("\nVehicle Rental Management Menu");
+                Console.WriteLine("1. Rent a Vehicle");
+                Console.WriteLine("2. Update Rental Details");
+                Console.WriteLine("3. Display All Rentals");
+                Console.WriteLine("4. Exit");
+
+                if (!int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    Console.WriteLine("Invalid choice, please try again.");
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        VehicleRental rental = new VehicleRental();
+
+                        Console.Write("Customer Name: ");
+                        rental.CustomerName = Console.ReadLine();
+
+                        Console.Write("Vehicle Type: ");
+                        rental.VehicleType = Console.ReadLine();
+
+                        Console.Write("Rental Duration (days): ");
+                        if (!int.TryParse(Console.ReadLine(), out int duration))
+                        {
+                            Console.WriteLine("Invalid rental duration.");
+                            break;
+                        }
+                        rental.RentalDuration = duration;
+
+                        Console.Write("Rental Date (yyyy-mm-dd): ");
+                        rental.RentalDate = Console.ReadLine();
+
+                        Console.Write("Special Requests: ");
+                        rental.SpecialRequests = Console.ReadLine();
+
+                        RentVehicle(rental);
+                        break;
+
+                    case 2:
+                        Console.Write("Enter Rental ID: ");
+                        if (!int.TryParse(Console.ReadLine(), out int rentalId))
+                        {
+                            Console.WriteLine("Invalid Rental ID.");
+                            break;
+                        }
+
+                        VehicleRental updatedRental = new VehicleRental();
+
+                        Console.Write("Customer Name: ");
+                        updatedRental.CustomerName = Console.ReadLine();
+
+                        Console.Write("Vehicle Type: ");
+                        updatedRental.VehicleType = Console.ReadLine();
+
+                        Console.Write("Rental Duration (days): ");
+                        if (!int.TryParse(Console.ReadLine(), out int updatedDuration))
+                        {
+                            Console.WriteLine("Invalid rental duration.");
+                            break;
+                        }
+                        updatedRental.RentalDuration = updatedDuration;
+
+                        Console.Write("Rental Date (yyyy-mm-dd): ");
+                        updatedRental.RentalDate = Console.ReadLine();
+
+                        Console.Write("Special Requests: ");
+                        updatedRental.SpecialRequests = Console.ReadLine();
+
+                        UpdateRental(rentalId, updatedRental);
+                        break;
+
+                    case 3:
+                        Console.Write("Vehicle Type: ");
+                        string vehicleType = Console.ReadLine();
+
+                        Console.Write("Rental Duration (days): ");
+                        if (!int.TryParse(Console.ReadLine(), out int rentalDuration))
+                        {
+                            Console.WriteLine("Invalid rental duration.");
+                            break;
+                        }
+
+                        DisplayAllRentals(vehicleType, rentalDuration);
+                        break;
+
+                    case 4:
+                        Console.WriteLine("Exiting the application...");
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice, please try again.");
+                        break;
+                }
+            }
+        }
+
+        
+        public static void RentVehicle(VehicleRental rentalObj)
+        {
+            using SqlConnection conn = new SqlConnection(ConnectionStringProvider.ConnectionString);
+
+            string query = "SELECT * FROM VehicleRental";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "VehicleRental");
+
+            DataRow row = ds.Tables["VehicleRental"].NewRow();
+            row["CustomerName"] = rentalObj.CustomerName;
+            row["VehicleType"] = rentalObj.VehicleType;
+            row["RentalDuration"] = rentalObj.RentalDuration;
+            row["RentalDate"] = rentalObj.RentalDate;
+            row["SpecialRequests"] = rentalObj.SpecialRequests;
+
+            ds.Tables["VehicleRental"].Rows.Add(row);
+            adapter.Update(ds, "VehicleRental");
+
+            Console.WriteLine("Vehicle rental recorded successfully.");
+        }
+
+        
+        public static void UpdateRental(int rentalID, VehicleRental updatedRental)
+        {
+            using SqlConnection conn = new SqlConnection(ConnectionStringProvider.ConnectionString);
+
+            string query = "SELECT * FROM VehicleRental";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "VehicleRental");
+
+            DataRow[] rows = ds.Tables["VehicleRental"].Select($"RentalID={rentalID}");
+
+            if (rows.Length == 0)
+            {
+                Console.WriteLine($"No rental record found with ID {rentalID}.");
+                return;
+            }
+
+            DataRow row = rows[0];
+            row["CustomerName"] = updatedRental.CustomerName;
+            row["VehicleType"] = updatedRental.VehicleType;
+            row["RentalDuration"] = updatedRental.RentalDuration;
+            row["RentalDate"] = updatedRental.RentalDate;
+            row["SpecialRequests"] = updatedRental.SpecialRequests;
+
+            adapter.Update(ds, "VehicleRental");
+
+            Console.WriteLine("Rental details updated successfully.");
+        }
+
+        
+        public static void DisplayAllRentals(string vehicleType, int rentalDuration)
+        {
+            using SqlConnection conn = new SqlConnection(ConnectionStringProvider.ConnectionString);
+
+            string query = "SELECT * FROM VehicleRental";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "VehicleRental");
+
+            DataRow[] rows = ds.Tables["VehicleRental"]
+                .Select($"VehicleType='{vehicleType}' OR RentalDuration={rentalDuration}");
+
+            if (rows.Length == 0)
+            {
+                Console.WriteLine("No vehicle rentals found.");
+                return;
+            }
+
+            foreach (DataRow row in rows)
+            {
+                Console.WriteLine($"RentalID: {row["RentalID"]}");
+                Console.WriteLine($"CustomerName: {row["CustomerName"]}");
+                Console.WriteLine($"VehicleType: {row["VehicleType"]}");
+                Console.WriteLine($"RentalDuration: {row["RentalDuration"]} days");
+                Console.WriteLine($"RentalDate: {row["RentalDate"]}");
+                Console.WriteLine($"SpecialRequests: {row["SpecialRequests"]}");
+                Console.WriteLine("-----------------------------------");
+            }
+        }
+    }
+}

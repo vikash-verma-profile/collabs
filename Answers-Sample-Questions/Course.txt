@@ -1,0 +1,201 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace UniversityCourseManagement
+{
+    public class DuplicateCourseIDError : Exception
+    {
+        public DuplicateCourseIDError(string message) : base(message)
+        {
+        }
+    }
+    public class Course
+    {
+        public string CourseName { get; set; }
+        public int CourseID { get; set; }
+        public string Department { get; set; }
+        public string Instructor { get; set; }
+        public int Credits { get; set; }
+
+        public Course(string courseName, int courseId, string department, string instructor, int credits)
+        {
+            CourseName = courseName;
+            CourseID = courseId;
+            Department = department;
+            Instructor = instructor;
+            Credits = credits;
+        }
+
+        public double CalculateDiscountedFee(double baseFee)
+        {
+            if (Credits > 4)
+                return baseFee * 0.90;  
+            else if (Credits >= 3)
+                return baseFee * 0.95; 
+            else
+                return baseFee;       
+        }
+
+        public void DisplayDetails()
+        {
+            double baseFee = 1000;
+            Console.WriteLine(
+                $"Course Name: {CourseName}, Course ID: {CourseID}, Department: {Department}, " +
+                $"Instructor: {Instructor}, Credits: {Credits}, " +
+                $"Discounted Fee: {CalculateDiscountedFee(baseFee):F2}"
+            );
+        }
+    }
+    public class CourseManager
+    {
+        private List<Course> courses = new List<Course>();
+
+        public void AddCourse(Course course)
+        {
+            if (courses.Any(c => c.CourseID == course.CourseID))
+            {
+                throw new DuplicateCourseIDError("Duplicate course ID error");
+            }
+
+            courses.Add(course);
+            Console.WriteLine("Course details added successfully");
+        }
+
+        public void DisplayAllCourses()
+        {
+            if (courses.Count == 0)
+            {
+                Console.WriteLine("No courses available");
+                return;
+            }
+
+            foreach (var course in courses)
+            {
+                course.DisplayDetails();
+            }
+        }
+
+        public void UpdateCourseById(int id)
+        {
+            if (courses.Count == 0)
+            {
+                Console.WriteLine("Course not found");
+                return;
+            }
+
+            Course course = courses.FirstOrDefault(c => c.CourseID == id);
+            if (course == null)
+            {
+                Console.WriteLine("Course not found");
+                return;
+            }
+
+            Console.WriteLine("Enter updated Course Name:");
+            course.CourseName = Console.ReadLine();
+
+            Console.WriteLine("Enter updated Department:");
+            course.Department = Console.ReadLine();
+
+            Console.WriteLine("Enter updated Instructor:");
+            course.Instructor = Console.ReadLine();
+
+            Console.WriteLine("Enter updated Credits:");
+            if (int.TryParse(Console.ReadLine(), out int credits))
+            {
+                course.Credits = credits;
+                Console.WriteLine("Course details updated successfully");
+            }
+            else
+            {
+                Console.WriteLine("Invalid credit format");
+            }
+        }
+    }
+
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            CourseManager manager = new CourseManager();
+            bool exit = false;
+
+            while (!exit)
+            {
+                Console.WriteLine("\n1. Add a Course");
+                Console.WriteLine("2. Display All Courses");
+                Console.WriteLine("3. Update Course Details");
+                Console.WriteLine("4. Exit the Program");
+
+                if (!int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    Console.WriteLine("Invalid choice");
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        try
+                        {
+                            Console.WriteLine("Enter Course Name:");
+                            string name = Console.ReadLine();
+
+                            Console.WriteLine("Enter Course ID:");
+                            if (!int.TryParse(Console.ReadLine(), out int id))
+                            {
+                                Console.WriteLine("Invalid Course ID");
+                                break;
+                            }
+
+                            Console.WriteLine("Enter Department:");
+                            string department = Console.ReadLine();
+
+                            Console.WriteLine("Enter Instructor:");
+                            string instructor = Console.ReadLine();
+
+                            Console.WriteLine("Enter Credits:");
+                            if (!int.TryParse(Console.ReadLine(), out int credits))
+                            {
+                                Console.WriteLine("Invalid Credits");
+                                break;
+                            }
+
+                            Course course = new Course(name, id, department, instructor, credits);
+                            manager.AddCourse(course);
+                        }
+                        catch (DuplicateCourseIDError ex)
+                        {
+                            Console.WriteLine(ex.Message);
+                        }
+                        break;
+
+                    case 2:
+                        manager.DisplayAllCourses();
+                        break;
+
+                    case 3:
+                        Console.WriteLine("Enter Course ID to update:");
+                        if (int.TryParse(Console.ReadLine(), out int updateId))
+                        {
+                            manager.UpdateCourseById(updateId);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid Course ID");
+                        }
+                        break;
+
+                    case 4:
+                        Console.WriteLine("Exiting the program...");
+                        exit = true;
+                        break;
+
+                    default:
+                        Console.WriteLine("Invalid choice");
+                        break;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,218 @@
+using System;
+using System.Data;
+using System.Data.SqlClient;
+using dotnetapp.Models;
+
+namespace dotnetapp
+{
+    public static class ConnectionStringProvider
+    {
+        public static string ConnectionString =
+            "User ID=sa;password=examlyMssql@123;server=localhost;Database=appdb;trusted_connection=false;Persist Security Info=False;Encrypt=False";
+    }
+
+    public class Program
+    {
+        public static void Main(string[] args)
+        {
+            while (true)
+            {
+                Console.WriteLine("\nEvent Registration Management Menu");
+                Console.WriteLine("1. Add Registration");
+                Console.WriteLine("2. Update Registration");
+                Console.WriteLine("3. Display All Registrations");
+                Console.WriteLine("4. Exit");
+
+                if (!int.TryParse(Console.ReadLine(), out int choice))
+                {
+                    Console.WriteLine("Invalid choice, please try again.");
+                    continue;
+                }
+
+                switch (choice)
+                {
+                    case 1:
+                        AddRegistrationInput();
+                        break;
+
+                    case 2:
+                        UpdateRegistrationInput();
+                        break;
+
+                    case 3:
+                        DisplayRegistrationsInput();
+                        break;
+
+                    case 4:
+                        Console.WriteLine("Exiting the application...");
+                        return;
+
+                    default:
+                        Console.WriteLine("Invalid choice, please try again.");
+                        break;
+                }
+            }
+        }
+
+        
+        public static void AddRegistration(ParticipantRegistration registrationObj)
+        {
+            using SqlConnection conn = new SqlConnection(ConnectionStringProvider.ConnectionString);
+
+            string query = "SELECT * FROM EventRegistrations";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "EventRegistrations");
+
+            DataRow row = ds.Tables["EventRegistrations"].NewRow();
+            row["ParticipantName"] = registrationObj.ParticipantName;
+            row["EventName"] = registrationObj.EventName;
+            row["ContactNumber"] = registrationObj.ContactNumber;
+            row["RegistrationDate"] = registrationObj.RegistrationDate;
+            row["SpecialRequests"] = registrationObj.SpecialRequests;
+
+            ds.Tables["EventRegistrations"].Rows.Add(row);
+            adapter.Update(ds, "EventRegistrations");
+
+            Console.WriteLine("Registration added successfully.");
+        }
+
+       
+        public static void DisplayAllRegistrations(string participantName, string eventName)
+        {
+            using SqlConnection conn = new SqlConnection(ConnectionStringProvider.ConnectionString);
+
+            string query = "SELECT * FROM EventRegistrations";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "EventRegistrations");
+
+            DataRow[] rows = ds.Tables["EventRegistrations"]
+                .Select($"ParticipantName='{participantName}' AND EventName='{eventName}'");
+
+            if (rows.Length == 0)
+            {
+                Console.WriteLine("No registrations found.");
+                return;
+            }
+
+            foreach (DataRow row in rows)
+            {
+                Console.WriteLine(
+                    $"RegistrationID: {row["RegistrationID"]} " +
+                    $"ParticipantName: {row["ParticipantName"]} " +
+                    $"EventName: {row["EventName"]} " +
+                    $"ContactNumber: {row["ContactNumber"]} " +
+                    $"RegistrationDate: {row["RegistrationDate"]} " +
+                    $"SpecialRequests: {row["SpecialRequests"]}"
+                );
+            }
+        }
+
+        public static void UpdateRegistration(int registrationID, ParticipantRegistration updatedRegistration)
+        {
+            using SqlConnection conn = new SqlConnection(ConnectionStringProvider.ConnectionString);
+
+            string query = "SELECT * FROM EventRegistrations";
+            SqlDataAdapter adapter = new SqlDataAdapter(query, conn);
+            SqlCommandBuilder builder = new SqlCommandBuilder(adapter);
+
+            DataSet ds = new DataSet();
+            adapter.Fill(ds, "EventRegistrations");
+
+            DataRow[] rows = ds.Tables["EventRegistrations"]
+                .Select($"RegistrationID={registrationID}");
+
+            if (rows.Length == 0)
+            {
+                Console.WriteLine($"No registration found with ID {registrationID}.");
+                return;
+            }
+
+            DataRow row = rows[0];
+            row["ParticipantName"] = updatedRegistration.ParticipantName;
+            row["EventName"] = updatedRegistration.EventName;
+            row["ContactNumber"] = updatedRegistration.ContactNumber;
+            row["RegistrationDate"] = updatedRegistration.RegistrationDate;
+            row["SpecialRequests"] = updatedRegistration.SpecialRequests;
+
+            adapter.Update(ds, "EventRegistrations");
+
+            Console.WriteLine("Registration details updated successfully.");
+            Console.WriteLine(
+                $"RegistrationID: {row["RegistrationID"]} " +
+                $"ParticipantName: {row["ParticipantName"]} " +
+                $"EventName: {row["EventName"]} " +
+                $"ContactNumber: {row["ContactNumber"]} " +
+                $"RegistrationDate: {row["RegistrationDate"]} " +
+                $"SpecialRequests: {row["SpecialRequests"]}"
+            );
+        }
+
+        
+        private static void AddRegistrationInput()
+        {
+            ParticipantRegistration reg = new ParticipantRegistration();
+
+            Console.Write("Participant Name: ");
+            reg.ParticipantName = Console.ReadLine();
+
+            Console.Write("Event Name: ");
+            reg.EventName = Console.ReadLine();
+
+            Console.Write("Contact Number: ");
+            reg.ContactNumber = Console.ReadLine();
+
+            Console.Write("Registration Date (yyyy-mm-dd): ");
+            reg.RegistrationDate = Console.ReadLine();
+
+            Console.Write("Special Requests: ");
+            reg.SpecialRequests = Console.ReadLine();
+
+            AddRegistration(reg);
+        }
+
+        private static void UpdateRegistrationInput()
+        {
+            Console.Write("Enter Registration ID: ");
+            if (!int.TryParse(Console.ReadLine(), out int id))
+            {
+                Console.WriteLine("Invalid Registration ID.");
+                return;
+            }
+
+            ParticipantRegistration reg = new ParticipantRegistration();
+
+            Console.Write("Participant Name: ");
+            reg.ParticipantName = Console.ReadLine();
+
+            Console.Write("Event Name: ");
+            reg.EventName = Console.ReadLine();
+
+            Console.Write("Contact Number: ");
+            reg.ContactNumber = Console.ReadLine();
+
+            Console.Write("Registration Date (yyyy-mm-dd): ");
+            reg.RegistrationDate = Console.ReadLine();
+
+            Console.Write("Special Requests: ");
+            reg.SpecialRequests = Console.ReadLine();
+
+            UpdateRegistration(id, reg);
+        }
+
+        private static void DisplayRegistrationsInput()
+        {
+            Console.Write("Participant Name: ");
+            string name = Console.ReadLine();
+
+            Console.Write("Event Name: ");
+            string eventName = Console.ReadLine();
+
+            DisplayAllRegistrations(name, eventName);
+        }
+    }
+}

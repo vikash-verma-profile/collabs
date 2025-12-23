@@ -13,7 +13,7 @@ namespace ConsoleApp1
     }
     internal class Class3
     {
-        public static void Main()
+        public static void Main67()
         {
             /*
             List<int> list= new List<int>();
